@@ -84,6 +84,8 @@ p { margin: 0; }
   color: var(--white);
 }
 
+.nav-cta:hover{ opacity: 0.8; transform: translateY(-1px); }
+
 /* Hero */
 .hero { padding: 48px 0 104px; }
 .hero-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 56px; }
