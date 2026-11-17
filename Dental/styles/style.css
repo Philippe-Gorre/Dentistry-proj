@@ -169,6 +169,24 @@ p { margin: 0; }
   cursor: pointer;
 }
 .chip[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: var(--white); }
+.availability-message { color: var(--muted); font-size: 14px; }
+.available-slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.available-slot {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.available-slot:hover { border-color: var(--violet); }
+.available-slot[aria-pressed="true"] { border-color: var(--violet); background: var(--tint); color: var(--violet); }
+.available-slots__empty { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 14px; }
 
 /* Services */
 .section-head { display: flex; flex-direction: column; gap: 16px; max-width: 680px; }
