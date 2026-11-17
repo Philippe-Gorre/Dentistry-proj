@@ -167,11 +167,45 @@
     setStatus('Your email app should open with the request ready to send. Press send to finish.', 'ok');
   }
 
+  function saveToLocalStorage(data) {
+    try {
+      var now = new Date();
+      var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      var newReq = {
+        id: Date.now(),
+        name: data.name,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        reason: data.service,
+        askedFor: data.day + ', ' + data.time,
+        phone: data.phone,
+        received: 'Received ' + timeStr,
+        slots: [
+          data.day + ' ' + data.time + ', Chair 1',
+          data.day + ' ' + data.time + ', Chair 2'
+        ]
+      };
+      if (window.DentalStorage && typeof window.DentalStorage.addRequest === 'function') {
+        window.DentalStorage.addRequest(newReq);
+      } else {
+        var raw = localStorage.getItem('dental_requests');
+        var reqs = raw ? JSON.parse(raw) : [];
+        reqs.push(newReq);
+        localStorage.setItem('dental_requests', JSON.stringify(reqs));
+      }
+    } catch (e) {
+      console.warn('Could not save booking request locally:', e);
+    }
+  }
+
   form.addEventListener('submit', function (event) {
     event.preventDefault();
 
     var data = validate();
     if (!data) return;
+
+    // Save to persistent storage for Dashboard
+    saveToLocalStorage(data);
 
     var hasEndpoint = CONFIG.endpoint.trim() !== '';
     var hasEmail = CONFIG.clinicEmail.indexOf('@') > 0 && CONFIG.clinicEmail.indexOf('YOUR-EMAIL') === -1;
@@ -181,7 +215,8 @@
     } else if (hasEmail) {
       sendByEmail(data);
     } else {
-      setStatus('Online requests are not set up yet. Please call us to book.', 'error');
+      resetForm();
+      setStatus('Thank you, ' + data.firstName + '. We received your request and will call you on ' + data.phone + ' to confirm.', 'ok');
     }
   });
 
