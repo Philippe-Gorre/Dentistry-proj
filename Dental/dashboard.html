@@ -21,7 +21,7 @@
       </a>
       <nav class="nav" aria-label="Main">
         <a class="is-active" href="#" aria-current="page">Dashboard</a>
-        <a href="#">Appointments</a>
+        <a href="appointments.html">Appointments</a>
         <a href="patients.html">Patients</a>
         <a href="#">Messages</a>
       </nav>
@@ -38,7 +38,7 @@
 
     <div class="intro">
       <span class="muted" id="today">Monday 16 November 2026</span>
-      <h1 id="headline">Booking requests</h1>
+      <h1>Today's schedule</h1>
       <p class="stats">
         <span><strong id="stat-appointments">0</strong> appointments today</span>
         <span><strong id="stat-checkedin">0</strong> checked in</span>
@@ -47,11 +47,6 @@
     </div>
 
     <div class="columns">
-
-      <!-- Filled in by dashboard.js -->
-      <section class="requests" aria-label="Booking requests">
-        <div id="request-list" class="request-list"></div>
-      </section>
 
       <section class="day" aria-label="Rest of today">
         <div class="day__head">
@@ -71,17 +66,34 @@
 
   <!-- ============ BOOK OPEN SLOT MODAL ============ -->
   <div class="modal-overlay" id="modal-book-slot" hidden>
-    <div class="modal" role="dialog" aria-labelledby="book-slot-title" aria-modal="true">
+    <div class="modal modal--booking" role="dialog" aria-labelledby="book-slot-title" aria-modal="true">
       <div class="modal__head">
         <h2 id="book-slot-title">Book appointment</h2>
         <button class="modal__close" type="button" id="close-book-modal" aria-label="Close">✕</button>
       </div>
       <form id="form-book-slot">
-        <div class="modal__field">
-          <label for="slot-patient-name">Patient name</label>
-          <input class="modal__input" type="text" id="slot-patient-name" required placeholder="e.g. Priya Nair" autocomplete="off" list="registered-patients-list">
-          <datalist id="registered-patients-list"></datalist>
+        <h3 class="modal__section-title">Personal information</h3>
+        <div class="modal__row">
+          <div class="modal__field">
+            <label for="slot-patient-first-name">First name</label>
+            <input class="modal__input" type="text" id="slot-patient-first-name" autocomplete="given-name" maxlength="80" required>
+          </div>
+          <div class="modal__field">
+            <label for="slot-patient-last-name">Last name</label>
+            <input class="modal__input" type="text" id="slot-patient-last-name" autocomplete="family-name" maxlength="80" required>
+          </div>
         </div>
+        <div class="modal__row">
+          <div class="modal__field">
+            <label for="slot-patient-phone">Phone number</label>
+            <input class="modal__input" type="tel" id="slot-patient-phone" autocomplete="tel" placeholder="+63 912 345 6789" maxlength="20" required>
+          </div>
+          <div class="modal__field">
+            <label for="slot-patient-email">Email</label>
+            <input class="modal__input" type="email" id="slot-patient-email" autocomplete="email" maxlength="254" placeholder="patient@email.com">
+          </div>
+        </div>
+        <h3 class="modal__section-title">Appointment details</h3>
         <div class="modal__field">
           <label for="slot-service">Service / Treatment</label>
           <select class="modal__input" id="slot-service">
@@ -93,6 +105,10 @@
             <option>Child's first visit</option>
             <option>Crown fitting</option>
           </select>
+        </div>
+        <div class="modal__field">
+          <label for="slot-note">Front desk note</label>
+          <textarea class="modal__input modal__textarea" id="slot-note" maxlength="500" placeholder="Any notes about the patient…"></textarea>
         </div>
         <div class="modal__field">
           <label for="slot-status">Status</label>

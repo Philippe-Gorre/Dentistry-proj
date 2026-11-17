@@ -64,22 +64,30 @@
         </svg>
         <form class="card" id="booking-form">
           <div>
-            <h2>Request an appointment</h2>
-            <p class="sub">Tell us what suits you and we will call to confirm.</p>
+            <h2>Book an appointment</h2>
+            <p class="sub">Choose a day and an available time to book directly.</p>
           </div>
           <div class="row">
             <div class="field">
               <label for="pt-fname">First name</label>
-              <input class="input" id="pt-fname" type="text" autocomplete="given-name">
+              <input class="input" id="pt-fname" type="text" autocomplete="given-name" maxlength="80" required>
             </div>
             <div class="field">
               <label for="pt-lname">Last name</label>
-              <input class="input" id="pt-lname" type="text" autocomplete="family-name">
+              <input class="input" id="pt-lname" type="text" autocomplete="family-name" maxlength="80" required>
             </div>
             <div class="field">
               <label for="pt-phone">Phone number</label>
-              <input class="input" id="pt-phone" type="tel" autocomplete="tel" maxlength="11">
+              <input class="input" id="pt-phone" type="tel" autocomplete="tel" maxlength="20" required>
             </div>
+            <div class="field">
+              <label for="pt-email">Email (optional)</label>
+              <input class="input" id="pt-email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
+            </div>
+          </div>
+          <div class="field">
+            <label for="pt-date">Appointment date</label>
+            <input class="input" id="pt-date" type="date" required>
           </div>
           <div class="field">
             <label for="pt-service">What is it for?</label>
@@ -92,37 +100,12 @@
               <option>My child's first visit</option>
             </select>
           </div>
-          <fieldset class="group" data-chips="day">
-            <legend class="group-label">Preferred day</legend>
-            <div class="chips">
-              <button class="chip" type="button" aria-pressed="false">Mon</button>
-              <button class="chip" type="button" aria-pressed="true">Tue</button>
-              <button class="chip" type="button" aria-pressed="false">Wed</button>
-              <button class="chip" type="button" aria-pressed="false">Thu</button>
-              <button class="chip" type="button" aria-pressed="false">Fri</button>
-              <button class="chip" type="button" aria-pressed="false">Sat</button>
-            </div>
+          <fieldset class="group" aria-describedby="pt-availability-message">
+            <legend class="group-label">Available times and chairs</legend>
+            <p class="availability-message" id="pt-availability-message" aria-live="polite"></p>
+            <div class="available-slots" id="pt-available-slots" role="group" aria-label="Available appointment slots"></div>
           </fieldset>
-          <div class="field">
-            <label for="pt-time">Preferred time</label>
-            <select class="input" id="pt-time">
-              <option>9:00 am</option>
-              <option>10:00 am</option>
-              <option>11:00 am</option>
-              <option>12:00 pm</option>
-              <option>1:00 pm</option>
-              <option>2:00 pm</option>
-              <option>3:00 pm</option>
-              <option>4:00 pm</option>
-              <option>5:00 pm</option>
-              <option>6:00 pm</option>
-              <option>7:00 pm</option>
-              <option>8:00 pm</option>
-              <option>9:00 pm</option>
-            </select>
-
-          </div>
-          <button class="btn btn-primary" type="submit">Request appointment</button>
+          <button class="btn btn-primary" id="pt-submit" type="submit">Book appointment</button>
           <p id="booking-status" class="status" role="status" aria-live="polite"></p>
         </form>
       </div>
