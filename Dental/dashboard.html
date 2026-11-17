@@ -13,7 +13,7 @@
 
   <header class="topbar">
     <div class="topbar__inner">
-      <a class="logo" href="#">
+      <a class="logo" href="index.html">
         <svg viewBox="0 0 48 32" width="40" height="27" aria-hidden="true">
           <path d="M6 8 Q24 34 42 8" fill="none" stroke="#5B2BD9" stroke-width="7" stroke-linecap="round"></path>
         </svg>
@@ -38,11 +38,11 @@
 
     <div class="intro">
       <span class="muted" id="today">Monday 16 November 2026</span>
-      <h1 id="headline">3 booking requests need a reply</h1>
+      <h1 id="headline">Booking requests</h1>
       <p class="stats">
-        <span><strong>7</strong> appointments today</span>
-        <span><strong>1</strong> checked in</span>
-        <span><strong>6</strong> open slots left</span>
+        <span><strong id="stat-appointments">0</strong> appointments today</span>
+        <span><strong id="stat-checkedin">0</strong> checked in</span>
+        <span><strong id="stat-openslots">0</strong> open slots left</span>
       </p>
     </div>
 
@@ -60,34 +60,8 @@
         </div>
 
         <div class="table-wrap">
-          <div class="chair-grid">
-            <div></div>
-            <div class="chair-head"><strong>Chair 1</strong><span class="muted">Dr. Mora</span></div>
-            <div class="chair-head"><strong>Chair 2</strong><span class="muted">Dr. Silva</span></div>
-
-            <div class="time">11:00 am</div>
-            <div class="slot slot--checkedin"><div class="slot__row"><strong>Priya Nair</strong><span class="pill pill--violet">Checked in</span></div><span class="slot__sub">Whitening</span></div>
-            <div class="slot slot--break">Lunch break</div>
-
-            <div class="time">12:00 pm</div>
-            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
-            <div class="slot slot--emergency"><div class="slot__row"><strong>Tomas Lee</strong><span class="pill pill--white-red">Emergency</span></div><span class="slot__sub">Broken tooth</span></div>
-
-            <div class="time">1:00 pm</div>
-            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
-            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
-
-            <div class="time">2:00 pm</div>
-            <div class="slot slot--appt"><div class="slot__row"><strong>Hannah Brooks</strong><span class="pill pill--green">Confirmed</span></div><span class="slot__sub">Aligner check</span></div>
-            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
-
-            <div class="time">3:00 pm</div>
-            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
-            <div class="slot slot--appt"><div class="slot__row"><strong>Jun Park</strong><span class="pill pill--green">Confirmed</span></div><span class="slot__sub">Child's first visit</span></div>
-
-            <div class="time">4:00 pm</div>
-            <div class="slot slot--appt"><div class="slot__row"><strong>Leila Haddad</strong><span class="pill pill--green">Confirmed</span></div><span class="slot__sub">Crown fitting</span></div>
-            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+          <div class="chair-grid" id="chair-grid">
+            <!-- Dynamically rendered by dashboard.js -->
           </div>
         </div>
       </section>
@@ -95,6 +69,71 @@
     </div>
   </main>
 
+  <!-- ============ BOOK OPEN SLOT MODAL ============ -->
+  <div class="modal-overlay" id="modal-book-slot" hidden>
+    <div class="modal" role="dialog" aria-labelledby="book-slot-title" aria-modal="true">
+      <div class="modal__head">
+        <h2 id="book-slot-title">Book appointment</h2>
+        <button class="modal__close" type="button" id="close-book-modal" aria-label="Close">✕</button>
+      </div>
+      <form id="form-book-slot">
+        <div class="modal__field">
+          <label for="slot-patient-name">Patient name</label>
+          <input class="modal__input" type="text" id="slot-patient-name" required placeholder="e.g. Priya Nair" autocomplete="off" list="registered-patients-list">
+          <datalist id="registered-patients-list"></datalist>
+        </div>
+        <div class="modal__field">
+          <label for="slot-service">Service / Treatment</label>
+          <select class="modal__input" id="slot-service">
+            <option>Check-up and cleaning</option>
+            <option>Toothache or repair</option>
+            <option>Broken tooth</option>
+            <option>Whitening</option>
+            <option>Aligner check</option>
+            <option>Child's first visit</option>
+            <option>Crown fitting</option>
+          </select>
+        </div>
+        <div class="modal__field">
+          <label for="slot-status">Status</label>
+          <select class="modal__input" id="slot-status">
+            <option value="confirmed">Confirmed</option>
+            <option value="emergency">Emergency</option>
+            <option value="checked-in">Checked in</option>
+          </select>
+        </div>
+        <div class="modal__actions">
+          <button class="btn btn--primary" type="submit">Save appointment</button>
+          <button class="btn btn--outline" type="button" id="cancel-book-modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MANAGE BOOKED SLOT MODAL ============ -->
+  <div class="modal-overlay" id="modal-manage-slot" hidden>
+    <div class="modal" role="dialog" aria-labelledby="manage-slot-title" aria-modal="true">
+      <div class="modal__head">
+        <h2 id="manage-slot-title">Appointment details</h2>
+        <button class="modal__close" type="button" id="close-manage-modal" aria-label="Close">✕</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <h3 id="manage-patient-name" style="font-size: 20px;">Patient Name</h3>
+          <span id="manage-patient-status" class="pill pill--green">Confirmed</span>
+        </div>
+        <p class="muted" id="manage-slot-info" style="font-size: 14px;">11:00 am • Chair 1 (Dr. Mora)</p>
+        <p style="font-weight: 600;" id="manage-service-name">Whitening</p>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--primary" type="button" id="btn-checkin-slot">Check in patient</button>
+        <button class="btn btn--danger" type="button" id="btn-cancel-slot">Cancel appointment</button>
+        <button class="btn btn--outline" type="button" id="btn-close-manage">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="Javascript/storage.js" defer></script>
   <script src="Javascript/dashboard.js" defer></script>
 </body>
 </html>
