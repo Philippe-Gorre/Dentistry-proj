@@ -2,13 +2,56 @@
    Central storage layer using browser localStorage.
    Handles persistent saving, retrieval, and updating of:
    - Patients (list, history, notes, statuses)
-   - Booking requests (from web form or dashboard)
 */
 (function (global) {
   'use strict';
 
   var PATIENTS_KEY = 'dental_patients';
-  var REQUESTS_KEY = 'dental_requests';
+  var DATED_SCHEDULES_KEY = 'dental_schedules_by_date';
+
+  function localDateKey(date) {
+    return date.getFullYear() + '-' +
+      String(date.getMonth() + 1).padStart(2, '0') + '-' +
+      String(date.getDate()).padStart(2, '0');
+  }
+
+  function isValidDateKey(date) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(date));
+  }
+
+  function sortSchedule(schedule) {
+    function minutes(time) {
+      var match = String(time).match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+      if (!match) return Infinity;
+      var hour = Number(match[1]) % 12;
+      if (match[3].toLowerCase() === 'pm') hour += 12;
+      return hour * 60 + Number(match[2]);
+    }
+
+    return schedule.sort(function (a, b) {
+      return minutes(a.time) - minutes(b.time);
+    });
+  }
+
+  function normalizePatientName(name) {
+    return String(name || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  function getPatientName(patient) {
+    return normalizePatientName((patient.firstName || '') + ' ' + (patient.lastName || ''));
+  }
+
+  function isValidPhoneNumber(value) {
+    var phone = String(value || '').trim();
+    var digits = phone.replace(/\D/g, '');
+    return phone.length <= 20 && /^\+?[\d\s().-]+$/.test(phone) &&
+      digits.length >= 7 && digits.length <= 15;
+  }
+
+  function isValidEmailAddress(value) {
+    var email = String(value || '').trim();
+    return email.length <= 254 && (!email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+  }
 
   var DentalStorage = {
     // ---------- PATIENTS STORAGE ----------
@@ -42,12 +85,50 @@
       return null;
     },
 
+    findPatientByName: function (name) {
+      var target = normalizePatientName(name);
+      if (!target) return null;
+
+      var patients = this.getPatients();
+      for (var i = 0; i < patients.length; i++) {
+        if (getPatientName(patients[i]) === target) return patients[i];
+      }
+      return null;
+    },
+
+    isValidPhoneNumber: isValidPhoneNumber,
+    isValidEmailAddress: isValidEmailAddress,
+
+    hasPatientAtTime: function (schedule, patientName, time) {
+      var targetName = normalizePatientName(patientName);
+      var targetTime = String(time || '').trim().toLowerCase();
+      if (!targetName || !targetTime) return false;
+
+      return schedule.some(function (row) {
+        if (String(row.time || '').trim().toLowerCase() !== targetTime) return false;
+        return [row.chair1, row.chair2].some(function (slot) {
+          return slot && normalizePatientName(slot.patientName) === targetName;
+        });
+      });
+    },
+
     addPatient: function (patientData) {
       var patients = this.getPatients();
+      var firstName = String(patientData.firstName || '').trim().replace(/\s+/g, ' ');
+      var lastName = String(patientData.lastName || '').trim().replace(/\s+/g, ' ');
+      if (!firstName || !lastName) throw new Error('First and last names are required.');
+      if (this.findPatientByName(firstName + ' ' + lastName)) {
+        throw new Error('A patient with this name already exists.');
+      }
+
       var id = patientData.id || Date.now();
-      var newPatient = Object.assign({}, patientData, { id: id });
+      var newPatient = Object.assign({}, patientData, {
+        id: id,
+        firstName: firstName,
+        lastName: lastName
+      });
       patients.push(newPatient);
-      this.savePatients(patients);
+      if (!this.savePatients(patients)) throw new Error('The patient record could not be saved.');
       return newPatient;
     },
 
@@ -73,45 +154,6 @@
         return p.id !== id && String(p.id) !== String(id);
       });
       this.savePatients(filtered);
-      return filtered;
-    },
-
-    // ---------- BOOKING REQUESTS STORAGE ----------
-    getRequests: function () {
-      try {
-        var raw = localStorage.getItem(REQUESTS_KEY);
-        return raw ? JSON.parse(raw) : [];
-      } catch (e) {
-        console.error('Failed to load booking requests from storage:', e);
-        return [];
-      }
-    },
-
-    saveRequests: function (requests) {
-      try {
-        localStorage.setItem(REQUESTS_KEY, JSON.stringify(requests));
-        return true;
-      } catch (e) {
-        console.error('Failed to save booking requests to storage:', e);
-        return false;
-      }
-    },
-
-    addRequest: function (requestData) {
-      var requests = this.getRequests();
-      var id = requestData.id || Date.now();
-      var newReq = Object.assign({}, requestData, { id: id });
-      requests.push(newReq);
-      this.saveRequests(requests);
-      return newReq;
-    },
-
-    removeRequest: function (id) {
-      var requests = this.getRequests();
-      var filtered = requests.filter(function (r) {
-        return r.id !== id && String(r.id) !== String(id);
-      });
-      this.saveRequests(filtered);
       return filtered;
     },
 
@@ -176,6 +218,87 @@
       }
     },
 
+    getScheduleForDate: function (date) {
+      if (!isValidDateKey(date)) throw new Error('A valid YYYY-MM-DD date is required.');
+      if (date === localDateKey(new Date())) return this.getSchedule();
+
+      try {
+        var schedules = JSON.parse(localStorage.getItem(DATED_SCHEDULES_KEY) || '{}');
+        return schedules[date] || this.getDefaultSchedule();
+      } catch (e) {
+        console.error('Failed to load dated schedule from storage:', e);
+        return this.getDefaultSchedule();
+      }
+    },
+
+    saveScheduleForDate: function (date, schedule) {
+      if (!isValidDateKey(date)) throw new Error('A valid YYYY-MM-DD date is required.');
+      if (date === localDateKey(new Date())) return this.saveSchedule(schedule);
+
+      try {
+        var schedules = JSON.parse(localStorage.getItem(DATED_SCHEDULES_KEY) || '{}');
+        schedules[date] = schedule;
+        localStorage.setItem(DATED_SCHEDULES_KEY, JSON.stringify(schedules));
+        return true;
+      } catch (e) {
+        console.error('Failed to save dated schedule to storage:', e);
+        return false;
+      }
+    },
+
+    setSlotForDate: function (date, time, chairNum, slotData) {
+      if (!isValidDateKey(date)) throw new Error('A valid YYYY-MM-DD date is required.');
+      if (date === localDateKey(new Date())) return this.setSlot(time, chairNum, slotData);
+
+      var schedule = this.getScheduleForDate(date);
+      var isChair1 = chairNum === 1 || chairNum === '1' || String(chairNum).indexOf('1') >= 0;
+      var found = false;
+
+      for (var i = 0; i < schedule.length; i++) {
+        if (schedule[i].time.toLowerCase().trim() === String(time).toLowerCase().trim()) {
+          if (isChair1) {
+            schedule[i].chair1 = slotData;
+          } else {
+            schedule[i].chair2 = slotData;
+          }
+          found = true;
+          break;
+        }
+      }
+
+      if (!found && time) {
+        schedule.push({
+          time: time,
+          chair1: isChair1 ? slotData : null,
+          chair2: isChair1 ? null : slotData
+        });
+      }
+
+      sortSchedule(schedule);
+      this.saveScheduleForDate(date, schedule);
+      return schedule;
+    },
+
+    checkInSlotForDate: function (date, time, chairNum) {
+      if (!isValidDateKey(date)) throw new Error('A valid YYYY-MM-DD date is required.');
+      if (date === localDateKey(new Date())) return this.checkInSlot(time, chairNum);
+
+      var schedule = this.getScheduleForDate(date);
+      var isChair1 = chairNum === 1 || chairNum === '1' || String(chairNum).indexOf('1') >= 0;
+      for (var i = 0; i < schedule.length; i++) {
+        if (schedule[i].time.toLowerCase().trim() === String(time).toLowerCase().trim()) {
+          var target = isChair1 ? schedule[i].chair1 : schedule[i].chair2;
+          if (target && target.type !== 'break') {
+            target.status = 'checked-in';
+            target.statusLabel = 'Checked in';
+          }
+          break;
+        }
+      }
+      this.saveScheduleForDate(date, schedule);
+      return schedule;
+    },
+
     setSlot: function (time, chairNum, slotData) {
       var schedule = this.getSchedule();
       var isChair1 = chairNum === 1 || chairNum === '1' || String(chairNum).indexOf('1') >= 0;
@@ -202,6 +325,7 @@
         schedule.push(newRow);
       }
 
+      sortSchedule(schedule);
       this.saveSchedule(schedule);
       return schedule;
     },
@@ -253,8 +377,9 @@
 
     clearAll: function () {
       localStorage.removeItem(PATIENTS_KEY);
-      localStorage.removeItem(REQUESTS_KEY);
+      localStorage.removeItem('dental_requests');
       localStorage.removeItem('dental_schedule');
+      localStorage.removeItem(DATED_SCHEDULES_KEY);
     }
   };
 
