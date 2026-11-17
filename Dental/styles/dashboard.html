@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dentistry With a Smile Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="styles/dashboard.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a class="logo" href="#">
+        <svg viewBox="0 0 48 32" width="40" height="27" aria-hidden="true">
+          <path d="M6 8 Q24 34 42 8" fill="none" stroke="#5B2BD9" stroke-width="7" stroke-linecap="round"></path>
+        </svg>
+        <span class="logo__name">Dentistry With a Smile</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a class="is-active" href="#" aria-current="page">Dashboard</a>
+        <a href="#">Appointments</a>
+        <a href="patients.html">Patients</a>
+        <a href="#">Messages</a>
+      </nav>
+      <div class="topbar__tools">
+        <button class="icon-btn" type="button" aria-label="Notifications">
+          <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8a5 5 0 0 1 10 0c0 4 1.5 5 1.5 5h-13S5 12 5 8zM8.3 16.2a2 2 0 0 0 3.4 0"></path></svg>
+        </button>
+        <span class="avatar">FD</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+
+    <div class="intro">
+      <span class="muted" id="today">Monday 16 November 2026</span>
+      <h1 id="headline">3 booking requests need a reply</h1>
+      <p class="stats">
+        <span><strong>7</strong> appointments today</span>
+        <span><strong>1</strong> checked in</span>
+        <span><strong>6</strong> open slots left</span>
+      </p>
+    </div>
+
+    <div class="columns">
+
+      <!-- Filled in by dashboard.js -->
+      <section class="requests" aria-label="Booking requests">
+        <div id="request-list" class="request-list"></div>
+      </section>
+
+      <section class="day" aria-label="Rest of today">
+        <div class="day__head">
+          <h2>Rest of today, by chair</h2>
+          <a class="link" href="#">Open full calendar</a>
+        </div>
+
+        <div class="table-wrap">
+          <div class="chair-grid">
+            <div></div>
+            <div class="chair-head"><strong>Chair 1</strong><span class="muted">Dr. Mora</span></div>
+            <div class="chair-head"><strong>Chair 2</strong><span class="muted">Dr. Silva</span></div>
+
+            <div class="time">11:00 am</div>
+            <div class="slot slot--checkedin"><div class="slot__row"><strong>Priya Nair</strong><span class="pill pill--violet">Checked in</span></div><span class="slot__sub">Whitening</span></div>
+            <div class="slot slot--break">Lunch break</div>
+
+            <div class="time">12:00 pm</div>
+            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+            <div class="slot slot--emergency"><div class="slot__row"><strong>Tomas Lee</strong><span class="pill pill--white-red">Emergency</span></div><span class="slot__sub">Broken tooth</span></div>
+
+            <div class="time">1:00 pm</div>
+            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+
+            <div class="time">2:00 pm</div>
+            <div class="slot slot--appt"><div class="slot__row"><strong>Hannah Brooks</strong><span class="pill pill--green">Confirmed</span></div><span class="slot__sub">Aligner check</span></div>
+            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+
+            <div class="time">3:00 pm</div>
+            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+            <div class="slot slot--appt"><div class="slot__row"><strong>Jun Park</strong><span class="pill pill--green">Confirmed</span></div><span class="slot__sub">Child's first visit</span></div>
+
+            <div class="time">4:00 pm</div>
+            <div class="slot slot--appt"><div class="slot__row"><strong>Leila Haddad</strong><span class="pill pill--green">Confirmed</span></div><span class="slot__sub">Crown fitting</span></div>
+            <div class="slot slot--open"><span>Open</span><a class="link" href="#">Add</a></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="Javascript/dashboard.js" defer></script>
+</body>
+</html>
